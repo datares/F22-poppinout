@@ -1,8 +1,6 @@
 #%%
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import re
 import seaborn as sns
 
 def word_indexes(descriptions):
@@ -61,9 +59,6 @@ turnout_train = turnout[:82]
 turnout_test = turnout[82:]
 words = word_indexes(ptrain)
 mat = tf_idf_mat(ptrain, words)
-#rint(df[df['attendeesCount'].notna()]["description"].describe(include = "all"))
-#print(df["description"].describe(include = "all"))
-#print(df[df["attendeesCount"] > 0].describe())
 confusion = pd.DataFrame({"true_big":{"predicted_small":0, "predicted_big":0}, "true_small":{"predicted_big":0, "predicted_small":0}})
 for doc,val in zip(ptest, turnout_test):
     prediction = predict(doc, mat, words)
@@ -81,3 +76,5 @@ sns.heatmap(confusion, annot = True, cmap = sns.color_palette("blend:#00ADFF,#D7
 correct = confusion.at["predicted_big", "true_big"] + confusion.at["predicted_small", "true_small"]
 incorrect = confusion.at["predicted_small", "true_big"] + confusion.at["predicted_big", "true_small"]
 print(f"Accuracy: {correct / (correct + incorrect)}")
+
+# %%
