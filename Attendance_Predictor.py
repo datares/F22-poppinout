@@ -81,38 +81,3 @@ sns.heatmap(confusion, annot = True, cmap = sns.color_palette("blend:#00ADFF,#D7
 correct = confusion.at["predicted_big", "true_big"] + confusion.at["predicted_small", "true_small"]
 incorrect = confusion.at["predicted_small", "true_big"] + confusion.at["predicted_big", "true_small"]
 print(f"Accuracy: {correct / (correct + incorrect)}")
-
-#print(words)
-
-
-#%%
-
-
-doc_term_matrix = []
-for sen in ptrain:
-    counts = [0] * len(words)
-    for word in sen.lower().split(" "):
-        if word in words:
-            counts[words[word]] += 1
-    doc_term_matrix.append(counts)
-
-doc_term_matrix = np.array(doc_term_matrix)
-tf_matrix = doc_term_matrix / np.sum(doc_term_matrix, axis = 1, keepdims = True)
-idf_matrix = np.log(doc_term_matrix.shape[0] / (np.sum(doc_term_matrix > 0, axis = 0, keepdims = True)))
-tf_idf_matrix = tf_matrix * idf_matrix
-x = list(words)
-y = list()
-for word in x:
-    y.append(idf_matrix[0, words[word]])
-x = [re.sub("\W+", " ", a).strip() for a in x]
-
-x = [a if a else "emoji" for a in x]
-x,y = zip(*sorted(zip(x,y), key=lambda a: -a[1]))
-#plt.figure()
-#plt.barh(x[:20], y[:20])
-#plt.ylabel("Words")
-#plt.xlabel("Inverse Document Frequency") #log of inverse of number of documents term appears in over total number of documents
-#plt.title("Most Significant Words")
-#plt.show()
-print(f"{x[:20]} {y[:20:]}")
-# %%
