@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import re
+import seaborn as sns
 
 def word_indexes(descriptions):
     word_set = set()
@@ -63,12 +64,24 @@ mat = tf_idf_mat(ptrain, words)
 #rint(df[df['attendeesCount'].notna()]["description"].describe(include = "all"))
 #print(df["description"].describe(include = "all"))
 #print(df[df["attendeesCount"] > 0].describe())
-counter = 0
+confusion = pd.DataFrame({"true_big":{"predicted_small":0, "predicted_big":0}, "true_small":{"predicted_big":0, "predicted_small":0}})
 for doc,val in zip(ptest, turnout_test):
     prediction = predict(doc, mat, words)
-    if turnout_train[prediction] == val: 
-        counter+=1
-print("Accuracy: " + str(counter / len(ptest)))
+    if turnout_train[prediction] == "big" and val == "big":
+        confusion.at["predicted_big", "true_big"] += 1
+    if turnout_train[prediction] == "big" and val == "small":
+        confusion.at["predicted_big", "true_small"] += 1
+    if turnout_train[prediction] == "small" and val == "big":
+        confusion.at["predicted_small", "true_big"] += 1
+    if turnout_train[prediction] == "small" and val == "small":
+        confusion.at["predicted_small", "true_small"] += 1
+conf_names = [["PPTP", "PNTN"], ["PPTN", "PNTP"]]
+sns.set_theme(style='dark')
+sns.heatmap(confusion, annot = True, cmap = sns.color_palette("blend:#00ADFF,#D705F2", as_cmap=True))
+correct = confusion.at["predicted_big", "true_big"] + confusion.at["predicted_small", "true_small"]
+incorrect = confusion.at["predicted_small", "true_big"] + confusion.at["predicted_big", "true_small"]
+print(f"Accuracy: {correct / (correct + incorrect)}")
+
 #print(words)
 
 
@@ -94,12 +107,12 @@ for word in x:
 x = [re.sub("\W+", " ", a).strip() for a in x]
 
 x = [a if a else "emoji" for a in x]
-x,y = zip(*sorted(zip(x,y), key=lambda a: a[1]))
-plt.figure()
-plt.barh(x[:20], y[:20])
-plt.ylabel("Words")
-plt.xlabel("Inverse Document Frequency") #log of inverse of number of documents term appears in over total number of documents
-plt.title("Least Significant Words")
-plt.show()
-
+x,y = zip(*sorted(zip(x,y), key=lambda a: -a[1]))
+#plt.figure()
+#plt.barh(x[:20], y[:20])
+#plt.ylabel("Words")
+#plt.xlabel("Inverse Document Frequency") #log of inverse of number of documents term appears in over total number of documents
+#plt.title("Most Significant Words")
+#plt.show()
+print(f"{x[:20]} {y[:20:]}")
 # %%
